@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kółko i Krzyżyk - Gra z Botem</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            background: linear-gradient(135deg, #81c784, #64b5f6);
+            color: #333;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 2px 2px #333;
+        }
+
+        h2 {
+            font-size: 1.2em;
+            font-weight: 300;
+            color: #eeeeee;
+            margin-bottom: 20px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+            border: 2px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cell:hover {
+            background-color: #dcedc8;
+        }
+
+        .X {
+            color: #e57373;
+        }
+
+        .O {
+            color: #64b5f6;
+        }
+
+        .winner {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #4caf50;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .choice, button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #333;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .choice:hover, button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Kółko i Krzyżyk</h1>
+<h2>Wybierz, czy grasz jako "X" czy "O"</h2>
+
+<div id="choices">
+    <button class="choice" onclick="chooseSymbol('X')">Graj jako X</button>
+    <button class="choice" onclick="chooseSymbol('O')">Graj jako O</button>
+</div>
+
+<div class="board" id="board" style="display: none;">
+    <div class="cell" data-cell></div>
+    <div class="cell" data-cell></div>
+    <div class="cell" data-cell></div>
+    <div class="cell" data-cell></div>
+    <div class="cell" data-cell></div>
+    <div class="cell" data-cell></div>
+    <div class="cell" data-cell></div>
+    <div class="cell" data-cell></div>
+    <div class="cell" data-cell></div>
+</div>
+
+<div class="winner" id="winner"></div>
+<button onclick="startGame()" style="display: none;">Restart</button>
+<button onclick="resetGame()" style="display: none;" id="changeSymbolButton">Zmień symbol</button>
+
+<script>
+    const PLAYER_X = 'X';
+    const PLAYER_O = 'O';
+    const cells = document.querySelectorAll('[data-cell]');
+    const board = document.getElementById('board');
+    const winnerText = document.getElementById('winner');
+    const choiceButtons = document.getElementById('choices');
+    const restartButton = document.querySelector("button[onclick='startGame()']");
+    const changeSymbolButton = document.getElementById('changeSymbolButton');
+    const WINNING_COMBINATIONS = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
+
+    let playerClass;
+    let botClass;
+    let isPlayerTurn;
+
+    function chooseSymbol(symbol) {
+        playerClass = symbol;
+        botClass = symbol === PLAYER_X ? PLAYER_O : PLAYER_X;
+        isPlayerTurn = playerClass === PLAYER_X;
+
+        hideChoiceButtons();
+        showGameBoard();
+        resetWinnerMessage();
+
+        startGame();
+
+        if (!isPlayerTurn) {
+            botMove();
+        }
+    }
+
+    function startGame() {
+        cells.forEach(cell => {
+            cell.classList.remove(PLAYER_X);
+            cell.classList.remove(PLAYER_O);
+            cell.textContent = '';
+            cell.addEventListener('click', handlePlayerMove, { once: true });
+        });
+        resetWinnerMessage();
+    }
+
+    function resetGame() {
+        showChoiceButtons();
+        hideGameBoard();
+        resetWinnerMessage();
+    }
+
+    function handlePlayerMove(e) {
+        if (!isPlayerTurn) return;
+        const cell = e.target;
+        if (cell.classList.contains(PLAYER_X) || cell.classList.contains(PLAYER_O)) return;
+
+        markCell(cell, playerClass);
+        if (checkWin(playerClass)) {
+            concludeGame(false, playerClass);
+        } else if (isDraw()) {
+            concludeGame(true);
+        } else {
+            isPlayerTurn = false;
+            setTimeout(botMove, 500);
+        }
+    }
+
+    function botMove() {
+        const winningMove = findWinningMove(botClass);
+        const blockingMove = findWinningMove(playerClass);
+
+        let chosenCell;
+        if (winningMove !== null) {
+            chosenCell = cells[winningMove];
+        } else if (blockingMove !== null) {
+            chosenCell = cells[blockingMove];
+        } else {
+            const availableCells = [...cells].filter(cell => !cell.classList.contains(PLAYER_X) && !cell.classList.contains(PLAYER_O));
+            if (availableCells.length > 0) {
+                chosenCell = availableCells[Math.floor(Math.random() * availableCells.length)];
+            }
+        }
+
+        if (chosenCell) {
+            markCell(chosenCell, botClass);
+            if (checkWin(botClass)) {
+                concludeGame(false, botClass);
+            } else if (isDraw()) {
+                concludeGame(true);
+            } else {
+                isPlayerTurn = true;
+            }
+        }
+    }
+
+    function findWinningMove(currentClass) {
+        for (let combination of WINNING_COMBINATIONS) {
+            const [a, b, c] = combination;
+            if (
+                cells[a].classList.contains(currentClass) &&
+                cells[b].classList.contains(currentClass) &&
+                !cells[c].classList.contains(PLAYER_X) &&
+                !cells[c].classList.contains(PLAYER_O)
+            ) return c;
+            if (
+                cells[a].classList.contains(currentClass) &&
+                !cells[b].classList.contains(PLAYER_X) &&
+                !cells[b].classList.contains(PLAYER_O) &&
+                cells[c].classList.contains(currentClass)
+            ) return b;
+            if (
+                !cells[a].classList.contains(PLAYER_X) &&
+                !cells[a].classList.contains(PLAYER_O) &&
+                cells[b].classList.contains(currentClass) &&
+                cells[c].classList.contains(currentClass)
+            ) return a;
+        }
+        return null;
+    }
+
+    function markCell(cell, currentClass) {
+        cell.classList.add(currentClass);
+        cell.textContent = currentClass;
+    }
+
+    function checkWin(currentClass) {
+        return WINNING_COMBINATIONS.some(combination => {
+            return combination.every(index => {
+                return cells[index].classList.contains(currentClass);
+            });
+        });
+    }
+
+    function concludeGame(draw, currentClass) {
+        if (draw) {
+            winnerText.textContent = 'Remis!';
+        } else {
+            winnerText.textContent = `${currentClass} wygrywa!`;
+        }
+        cells.forEach(cell => {
+            cell.removeEventListener('click', handlePlayerMove);
+        });
+        changeSymbolButton.style.display = 'block';
+    }
+
+    function isDraw() {
+        return [...cells].every(cell => {
+            return cell.classList.contains(PLAYER_X) || cell.classList.contains(PLAYER_O);
+        });
+    }
+
+    function hideChoiceButtons() {
+        choiceButtons.style.display = 'none';
+    }
+
+    function showGameBoard() {
+        board.style.display = 'grid';
+        restartButton.style.display = 'block';
+        changeSymbolButton.style.display = 'none';
+    }
+
+    function resetWinnerMessage() {
+        winnerText.textContent = '';
+    }
+
+    function showChoiceButtons() {
+        choiceButtons.style.display = 'block';
+    }
+
+    function hideGameBoard() {
+        board.style.display = 'none';
+        restartButton.style.display = 'none';
+        changeSymbolButton.style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
