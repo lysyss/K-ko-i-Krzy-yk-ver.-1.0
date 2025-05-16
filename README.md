@@ -58,4 +58,4 @@ Tryb dwóch graczy lokalnych
 
 Historia rozgrywek i statystyki
 
-Dźwięki i animacje
+Dźwięki i animacje 
