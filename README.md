@@ -7,12 +7,19 @@ Gra przeglądarkowa „Kółko i Krzyżyk” (Tic-Tac-Toe) napisana w HTML, CSS 
 🆕 Co nowego w wersji 1.0 (finalna):
 
 ✅ W pełni działająca gra z interfejsem graficznym i botem przeciwnikiem
+
 ✅ Wybór symbolu: gracz może wybrać, czy gra jako X czy O
+
 ✅ Inteligentny bot: próbuje wygrać lub blokuje wygraną gracza
+
 ✅ System zwycięstw i remisów z komunikatem końcowym
+
 ✅ Przycisk Restart oraz możliwość zmiany symbolu bez przeładowywania strony
+
 ✅ Blokada na kliknięcie już zajętego pola (naprawiony błąd logiczny!)
+
 ✅ Estetyczny, responsywny interfejs z wykorzystaniem Google Fonts i gradientów
+
 ✅ Komentarze w kodzie wyjaśniające zastosowane zasady clean code
 
 🔧 Zastosowane dobre praktyki clean code:
