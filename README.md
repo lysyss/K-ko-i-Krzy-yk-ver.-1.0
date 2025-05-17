@@ -38,13 +38,13 @@ Komentarze wspierające zrozumienie kodu
 
 📁 Struktura projektu
 
-index.html – główny plik gry, zawiera HTML, CSS (w stylach wbudowanych) i JavaScript
+2AP_Cezary_Szymczyk_PROJOPP_e9 – główny plik gry, zawiera HTML, CSS (w stylach wbudowanych) i JavaScript
 
 brak zewnętrznych zależności (całość działa lokalnie w przeglądarce)
 
 🚀 Jak uruchomić?
 
-Pobierz plik 2AP_Cezary_Szymczyk_PROJOPP_AP_e9_ver.1.0
+Pobierz plik 2AP_Cezary_Szymczyk_PROJOPP_e9
 
 Otwórz go w dowolnej przeglądarce (Chrome, Firefox, Edge, itp.)
 
